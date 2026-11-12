@@ -1,0 +1,92 @@
+# ===== Логи =====
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== Зависимости =====
+node_modules
+.pnp
+.pnp.js
+
+# ===== Сборка =====
+dist
+dist-ssr
+build
+out
+
+# ===== Переменные окружения (секреты!) =====
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# ===== Кэш и временные файлы =====
+.cache
+.parcel-cache
+.vite
+*.local
+*.tsbuildinfo
+
+# ===== Редакторы =====
+# VSCode (оставляем только extensions.json — он полезен команде)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains (WebStorm, IntelliJ)
+.idea/
+*.iml
+
+# Vim / Emacs
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# ===== OS файлы =====
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+.directory
+
+# ===== Тесты / покрытие =====
+coverage
+*.lcov
+.nyc_output
+
+# ===== Storybook =====
+storybook-static
+
+# ===== Misc =====
+*.pem
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
