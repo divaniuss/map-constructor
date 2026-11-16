@@ -134,6 +134,9 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
     e: React.MouseEvent,
     obj: MapObjectData
   ) => {
+    if (activeTool === 'place') {
+      return;
+    }
     e.stopPropagation();
     if (activeTool === 'select') {
       onSelectObject(obj.id);
@@ -315,10 +318,43 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
                 key={obj.id}
                 transform={`translate(${obj.x}, ${obj.y})`}
                 onMouseDown={(e) => handleObjectMouseDown(e, obj)}
-                className="cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+                className={
+                  activeTool === 'delete' || activeTool === 'delete-object'
+                    ? 'cursor-pointer'
+                    : activeTool === 'select'
+                    ? 'cursor-move'
+                    : 'cursor-default'
+                }
               >
+                <rect
+                  x="-28"
+                  y="-28"
+                  width="56"
+                  height="56"
+                  rx="8"
+                  fill="transparent"
+                  stroke="transparent"
+                  strokeWidth="1.5"
+                  className={`transition-colors duration-150 ${
+                    activeTool === 'delete' || activeTool === 'delete-object'
+                      ? 'hover:fill-red-500/20 hover:stroke-red-500/70'
+                      : isSelected
+                      ? ''
+                      : 'hover:fill-sky-400/10 hover:stroke-sky-400/40'
+                  }`}
+                />
+                <rect
+                  x="-36"
+                  y="22"
+                  width="72"
+                  height="18"
+                  rx="4"
+                  fill="transparent"
+                />
+
                 {isSelected && (
-                  <g>
+                  <g pointerEvents="none">
                     <rect
                       x="-28"
                       y="-28"
@@ -361,7 +397,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
                   </g>
                 )}
 
-                <g transform="translate(-24, -24)">
+                <g transform="translate(-24, -24)" pointerEvents="none">
                   <ObjectGraphic type={obj.type} size={48} inMap={true} />
                 </g>
 
