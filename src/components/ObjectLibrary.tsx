@@ -80,7 +80,7 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
                 onClick={() => toggleGroup(group.id)}
                 className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
                   hasSelectedInGroup
-                    ? 'border-2 border-blue-500 bg-blue-600/20 text-white shadow-md'
+                    ? 'border border-blue-500/50 bg-blue-500/15 text-blue-100'
                     : 'border border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-700 hover:bg-slate-800 hover:text-white'
                 }`}
               >
@@ -114,7 +114,7 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
                         onClick={() => onSelectObject(item.type)}
                         className={`group/item flex items-center justify-between rounded-lg px-2.5 py-2 text-xs transition-all ${
                           isSelected
-                            ? 'border border-blue-500/60 bg-blue-600/30 font-semibold text-white'
+                            ? 'border border-blue-500/50 bg-blue-500/20 font-medium text-blue-100'
                             : 'border border-transparent hover:border-slate-700 bg-slate-800/30 hover:bg-slate-800 text-slate-300 hover:text-white'
                         }`}
                       >
@@ -136,7 +136,7 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
                           </div>
                         </div>
                         {isSelected && (
-                          <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400" />
+                          <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400/80" />
                         )}
                       </button>
                     );
@@ -158,7 +158,7 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
               onClick={() => onSelectObject(item.type)}
               className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
                 isSelected
-                  ? 'border-2 border-blue-500 bg-blue-600/20 text-white shadow-md'
+                  ? 'border border-blue-500/50 bg-blue-500/15 text-blue-100'
                   : 'border border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-700 hover:bg-slate-800 hover:text-white'
               }`}
               title={`Розмістити: ${item.name}`}
@@ -181,7 +181,7 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
                 </div>
               </div>
               {isSelected && (
-                <span className="flex h-2 w-2 rounded-full bg-blue-400 ring-4 ring-blue-400/20" />
+                <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400/80" />
               )}
             </button>
           );

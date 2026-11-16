@@ -47,7 +47,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         onClick={() => onSelectTool('select')}
         className={`group flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
           isSelectActive
-            ? 'border-2 border-blue-500 bg-blue-600/20 text-white shadow-lg'
+            ? 'border border-blue-500/50 bg-blue-500/15 text-blue-100'
             : 'border border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-700 hover:bg-slate-800 hover:text-white'
         }`}
         title="Вибір об`єктів та переміщення по карті"
@@ -56,7 +56,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
               isSelectActive
-                ? 'bg-blue-500 text-white'
+                ? 'bg-blue-600/40 text-blue-200'
                 : 'bg-slate-800 text-slate-400 group-hover:text-slate-200'
             }`}
           >
@@ -65,7 +65,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <span>Вибір</span>
         </div>
         {isSelectActive && (
-          <span className="flex h-2 w-2 rounded-full bg-blue-400 ring-4 ring-blue-400/20" />
+          <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400/80" />
         )}
       </button>
 
@@ -73,7 +73,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div
           className={`flex items-center justify-between rounded-xl transition-all ${
             isLineActive
-              ? 'border-2 border-amber-500/80 bg-amber-500/15 text-white'
+              ? 'border border-blue-500/50 bg-blue-500/15 text-blue-100'
               : 'border border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-700 hover:bg-slate-800 hover:text-white'
           }`}
         >
@@ -86,7 +86,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 isLineActive
-                  ? 'bg-amber-500 text-slate-950 font-bold'
+                  ? 'bg-blue-600/40 text-blue-200'
                   : 'bg-slate-800 text-amber-400 group-hover:text-amber-300'
               }`}
             >
@@ -142,7 +142,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                     />
                     <span>{cfg.shortLabel}</span>
                   </div>
-                  <span className="text-[10px] text-slate-500 font-mono">
+                  <span className="text-[10px] text-slate-500">
                     {cfg.voltageText}
                   </span>
                 </button>
@@ -152,8 +152,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         )}
 
         {isLineActive && lineStartPoleId && (
-          <div className="mt-1.5 flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-1.5 text-[11px] text-amber-300 border border-amber-500/20">
-            <Sparkles className="h-3.5 w-3.5 shrink-0 animate-pulse text-amber-400" />
+          <div className="mt-1.5 flex items-center gap-2 rounded-lg bg-blue-500/10 px-3 py-1.5 text-[11px] text-blue-300 border border-blue-500/20">
+            <Sparkles className="h-3.5 w-3.5 shrink-0 animate-pulse text-blue-400" />
             <span>Оберіть другу опору для з&apos;єднання</span>
           </div>
         )}
@@ -163,7 +163,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <div
           className={`flex items-center justify-between rounded-xl transition-all ${
             isDeleteActive
-              ? 'border-2 border-red-500 bg-red-600/20 text-red-200 shadow-lg'
+              ? 'border border-rose-500/40 bg-rose-500/10 text-rose-200'
               : 'border border-slate-800 bg-slate-800/40 text-slate-300 hover:border-slate-700 hover:bg-slate-800 hover:text-white'
           }`}
         >
@@ -176,8 +176,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 isDeleteActive
-                  ? 'bg-red-500 text-white'
-                  : 'bg-slate-800 text-red-400 group-hover:text-red-300'
+                  ? 'bg-rose-500/20 text-rose-300'
+                  : 'bg-slate-800 text-rose-400 group-hover:text-rose-300'
               }`}
             >
               <Trash2 className="h-4 w-4" />
@@ -215,7 +215,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               onClick={() => onSelectTool('delete')}
               className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors ${
                 activeTool === 'delete'
-                  ? 'bg-red-500/20 text-red-300 font-semibold'
+                  ? 'bg-rose-500/15 text-rose-300 font-medium'
                   : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
               }`}
             >
@@ -226,7 +226,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               onClick={() => onSelectTool('delete-object')}
               className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors ${
                 activeTool === 'delete-object'
-                  ? 'bg-red-500/20 text-red-300 font-semibold'
+                  ? 'bg-rose-500/15 text-rose-300 font-medium'
                   : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
               }`}
             >
@@ -237,7 +237,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               onClick={() => onSelectTool('delete-line')}
               className={`flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs transition-colors ${
                 activeTool === 'delete-line'
-                  ? 'bg-red-500/20 text-red-300 font-semibold'
+                  ? 'bg-rose-500/15 text-rose-300 font-medium'
                   : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
               }`}
             >
@@ -250,7 +250,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button
             type="button"
             onClick={onDeleteSelected}
-            className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500 hover:text-white"
+            className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-300 transition-colors hover:bg-rose-500/20"
           >
             <Trash2 className="h-3.5 w-3.5" />
             <span>Видалити вибране</span>

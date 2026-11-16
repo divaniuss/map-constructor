@@ -88,17 +88,17 @@ export function App() {
     setSelectedRoadId(null);
   };
 
+  const handleDeleteObject = (id: string) => {
+    setObjects((prev) => prev.filter((o) => o.id !== id));
+    setPowerLines((prev) => prev.filter((l) => l.startPoleId !== id && l.endPoleId !== id));
+    if (selectedObjectId === id) setSelectedObjectId(null);
+    if (connectingPoleId === id) setConnectingPoleId(null);
+  };
+
   const handleSelectObjectOnMap = (id: string | null) => {
     if (activeTool === 'delete' || activeTool === 'delete-object') {
       if (id) {
-        setObjects((prev) => prev.filter((o) => o.id !== id));
-        setPowerLines((prev) => prev.filter((l) => l.startPoleId !== id && l.endPoleId !== id));
-        if (selectedObjectId === id) {
-          setSelectedObjectId(null);
-        }
-        if (connectingPoleId === id) {
-          setConnectingPoleId(null);
-        }
+        handleDeleteObject(id);
       }
       return;
     }
@@ -352,6 +352,8 @@ export function App() {
             onDeleteLine={handleDeleteLine}
             onCreateRoad={handleCreateRoad}
             onDeleteRoad={handleDeleteRoad}
+            onDeleteObject={handleDeleteObject}
+            onCenterOn={handleCenterOn}
             connectingPoleId={connectingPoleId}
             onConnectingPoleChange={setConnectingPoleId}
             activeTool={activeTool}
@@ -386,12 +388,7 @@ export function App() {
             }}
             onUpdateObject={handleUpdateObject}
             onUpdateLineVoltage={handleUpdateLineVoltage}
-            onDeleteObject={(id) => {
-              setObjects((prev) => prev.filter((o) => o.id !== id));
-              setPowerLines((prev) => prev.filter((l) => l.startPoleId !== id && l.endPoleId !== id));
-              if (selectedObjectId === id) setSelectedObjectId(null);
-              if (connectingPoleId === id) setConnectingPoleId(null);
-            }}
+            onDeleteObject={handleDeleteObject}
             onDeleteLine={handleDeleteLine}
             onDeleteRoad={handleDeleteRoad}
             onCenterOn={handleCenterOn}

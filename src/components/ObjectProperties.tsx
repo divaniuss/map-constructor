@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import {
   Trash2,
   Crosshair,
-  Zap,
-  Layers,
-  MapPin,
-  Tag,
-  Activity,
   ArrowRight,
+  Info,
 } from 'lucide-react';
 import type {
   MapObjectData,
@@ -68,8 +64,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
           <span className="text-sm font-semibold text-slate-100 truncate">
             {libraryItem?.name ?? selectedObject.name}
           </span>
-          <span className="text-[11px] text-slate-400 flex items-center gap-1">
-            <Layers className="h-3 w-3 text-slate-500" />
+          <span className="text-[11px] text-slate-400 truncate">
             {selectedObject.category === 'electrical' ? 'Електромережа' : 'Місцевість'}
             {isPoleType(selectedObject.type) && ' · Опора'}
           </span>
@@ -78,8 +73,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
 
       <div className="space-y-3">
         <div>
-          <label className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mb-1.5">
-            <Tag className="h-3.5 w-3.5 text-slate-500" />
+          <label className="text-[11px] font-medium text-slate-400 block mb-1.5">
             Назва об`єкта
           </label>
           <input
@@ -94,13 +88,12 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
         </div>
 
         <div>
-          <label className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mb-1.5">
-            <MapPin className="h-3.5 w-3.5 text-slate-500" />
+          <label className="text-[11px] font-medium text-slate-400 block mb-1.5">
             Координати на карті (м)
           </label>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex items-center rounded-lg border border-slate-700/60 bg-slate-900/80 px-2.5 py-1.5">
-              <span className="text-[11px] font-mono text-slate-500 mr-2">X:</span>
+              <span className="text-[11px] text-slate-500 mr-2">X:</span>
               <input
                 type="number"
                 value={selectedObject.x}
@@ -108,11 +101,11 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
                   const val = parseInt(e.target.value, 10);
                   if (!isNaN(val)) onUpdateObject(selectedObject.id, { x: val });
                 }}
-                className="w-full bg-transparent text-xs font-mono text-slate-200 outline-none"
+                className="w-full bg-transparent text-xs text-slate-200 outline-none"
               />
             </div>
             <div className="flex items-center rounded-lg border border-slate-700/60 bg-slate-900/80 px-2.5 py-1.5">
-              <span className="text-[11px] font-mono text-slate-500 mr-2">Y:</span>
+              <span className="text-[11px] text-slate-500 mr-2">Y:</span>
               <input
                 type="number"
                 value={selectedObject.y}
@@ -120,7 +113,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
                   const val = parseInt(e.target.value, 10);
                   if (!isNaN(val)) onUpdateObject(selectedObject.id, { y: val });
                 }}
-                className="w-full bg-transparent text-xs font-mono text-slate-200 outline-none"
+                className="w-full bg-transparent text-xs text-slate-200 outline-none"
               />
             </div>
           </div>
@@ -136,10 +129,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
         {selectedObject.category === 'electrical' && (
           <div>
             <div className="flex items-center justify-between text-[11px] font-medium text-slate-400 mb-1.5">
-              <span className="flex items-center gap-1.5">
-                <Zap className="h-3.5 w-3.5 text-amber-400" />
-                Підключені лінії ({connectedLines.length})
-              </span>
+              <span>Підключені лінії ({connectedLines.length})</span>
             </div>
 
             {connectedLines.length === 0 ? (
@@ -170,7 +160,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
                           style={{ backgroundColor: cfg.color }}
                         />
                         <div className="flex flex-col min-w-0">
-                          <span className="font-mono text-xs font-medium text-slate-300 group-hover:text-white truncate">
+                          <span className="text-xs font-medium text-slate-300 group-hover:text-white truncate">
                             {line.id}
                           </span>
                           <span className="text-[10px] text-slate-500 flex items-center gap-1 truncate">
@@ -178,7 +168,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
                           </span>
                         </div>
                       </div>
-                      <span className="font-mono text-[11px] text-amber-400 shrink-0">
+                      <span className="text-[11px] text-amber-400 shrink-0 font-medium">
                         {lengthM} м
                       </span>
                     </button>
@@ -205,7 +195,7 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
         <button
           type="button"
           onClick={() => onDeleteObject(selectedObject.id)}
-          className="flex items-center justify-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500 hover:text-white"
+          className="flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 py-2 text-xs font-medium text-rose-300 transition-colors hover:bg-rose-500/20"
         >
           <Trash2 className="h-3.5 w-3.5" />
           <span>Видалити об`єкт</span>
@@ -258,17 +248,18 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+          <Info className="h-3.5 w-3.5 text-sky-400" />
           {selectedObject
-            ? 'Властивості об`єкта'
+            ? 'Інформація про об`єкт'
             : selectedLine
-            ? 'Властивості лінії'
+            ? 'Інформація про лінію'
             : selectedRoad
-            ? 'Властивості дороги'
-            : 'Властивості'}
+            ? 'Інформація про дорогу'
+            : 'Інформація'}
         </span>
         {(selectedObject || selectedLine || selectedRoad) && (
-          <span className="font-mono text-[11px] font-bold text-sky-400">
+          <span className="text-xs font-semibold text-sky-400">
             {selectedObject
               ? selectedObject.id
               : selectedLine
@@ -303,20 +294,18 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
             <div className="space-y-4">
               <div className="rounded-xl border border-slate-800 bg-slate-800/40 p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border"
-                    style={{
-                      borderColor: `${cfg.color}40`,
-                      backgroundColor: `${cfg.color}15`,
-                    }}
-                  >
-                    <Zap className="h-5 w-5" style={{ color: cfg.color }} />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-slate-900 border border-slate-800">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                      <line x1="4" y1="20" x2="24" y2="8" stroke={cfg.color} strokeWidth="2.5" strokeLinecap="round" />
+                      <circle cx="4" cy="20" r="3" fill="#0f172a" stroke={cfg.color} strokeWidth="2" />
+                      <circle cx="24" cy="8" r="3" fill="#0f172a" stroke={cfg.color} strokeWidth="2" />
+                    </svg>
                   </div>
                   <div>
                     <span className="text-sm font-semibold text-slate-100 block">
                       {cfg.label}
                     </span>
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="text-xs text-slate-400">
                       {selectedLine.id}
                     </span>
                   </div>
@@ -324,8 +313,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
               </div>
 
               <div>
-                <label className="text-[11px] font-medium text-slate-400 flex items-center gap-1.5 mb-2">
-                  <Activity className="h-3.5 w-3.5 text-slate-500" />
+                <label className="text-[11px] font-medium text-slate-400 block mb-2">
                   Клас напруги
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -357,7 +345,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
               <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 space-y-2.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Довжина лінії:</span>
-                  <span className="font-mono font-semibold text-amber-400 text-sm">
+                  <span className="font-semibold text-amber-400 text-sm">
                     {lengthM} м
                   </span>
                 </div>
@@ -367,7 +355,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectObject(selectedLine.startPoleId)}
-                    className="font-mono text-sky-400 hover:underline flex items-center gap-1"
+                    className="text-sky-400 hover:underline flex items-center gap-1"
                   >
                     <span>{startPole ? startPole.name : selectedLine.startPoleId}</span>
                     <ArrowRight className="h-3 w-3" />
@@ -378,7 +366,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectObject(selectedLine.endPoleId)}
-                    className="font-mono text-sky-400 hover:underline flex items-center gap-1"
+                    className="text-sky-400 hover:underline flex items-center gap-1"
                   >
                     <span>{endPole ? endPole.name : selectedLine.endPoleId}</span>
                     <ArrowRight className="h-3 w-3" />
@@ -403,7 +391,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
                 <button
                   type="button"
                   onClick={() => onDeleteLine(selectedLine.id)}
-                  className="flex items-center justify-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500 hover:text-white"
+                  className="flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 py-2 text-xs font-medium text-rose-300 transition-colors hover:bg-rose-500/20"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   <span>Видалити лінію</span>
@@ -424,14 +412,14 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
             <div className="space-y-4">
               <div className="rounded-xl border border-slate-800 bg-slate-800/40 p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700/60 bg-slate-900 text-slate-300 text-base">
-                    🛣️
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-slate-900 border border-slate-800">
+                    <ObjectGraphic type="road" size={30} />
                   </div>
                   <div>
                     <span className="text-sm font-semibold text-slate-100 block">
                       Асфальтна дорога
                     </span>
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="text-xs text-slate-400">
                       {selectedRoad.id}
                     </span>
                   </div>
@@ -441,18 +429,18 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
               <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 space-y-2.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Довжина ділянки:</span>
-                  <span className="font-mono font-semibold text-amber-400 text-sm">
+                  <span className="font-semibold text-amber-400 text-sm">
                     {lengthM} м
                   </span>
                 </div>
                 <div className="h-px w-full bg-slate-800" />
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Початок:</span>
-                  <span className="font-mono text-slate-300">({selectedRoad.startX}, {selectedRoad.startY})</span>
+                  <span className="text-slate-300">({selectedRoad.startX}, {selectedRoad.startY})</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Кінець:</span>
-                  <span className="font-mono text-slate-300">({selectedRoad.endX}, {selectedRoad.endY})</span>
+                  <span className="text-slate-300">({selectedRoad.endX}, {selectedRoad.endY})</span>
                 </div>
               </div>
 
@@ -472,7 +460,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
                   <button
                     type="button"
                     onClick={() => onDeleteRoad(selectedRoad.id)}
-                    className="flex items-center justify-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500 hover:text-white"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-rose-500/30 bg-rose-500/10 py-2 text-xs font-medium text-rose-300 transition-colors hover:bg-rose-500/20"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span>Видалити дорогу</span>
@@ -486,7 +474,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
         {!selectedObject && !selectedLine && !selectedRoad && (
           <div className="flex h-full flex-col items-center justify-center text-center p-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/60 border border-slate-700/50 text-slate-500 mb-3">
-              <Layers className="h-6 w-6" />
+              <Info className="h-6 w-6" />
             </div>
             <p className="text-xs font-medium text-slate-300">
               Нічого не обрано

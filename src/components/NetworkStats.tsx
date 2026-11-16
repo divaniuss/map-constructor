@@ -89,19 +89,19 @@ export const NetworkStats: React.FC<NetworkStatsProps> = ({
               <div className="space-y-1.5 text-[11px]">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Металеві (110–220 кВ):</span>
-                  <span className="font-mono font-medium text-slate-200">{metalPoles}</span>
+                  <span className="font-medium text-slate-200">{metalPoles}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Бетонні (10–35 кВ):</span>
-                  <span className="font-mono font-medium text-slate-200">{concretePoles}</span>
+                  <span className="font-medium text-slate-200">{concretePoles}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Дерев`яні (0.4–10 кВ):</span>
-                  <span className="font-mono font-medium text-slate-200">{woodenPoles}</span>
+                  <span className="font-medium text-slate-200">{woodenPoles}</span>
                 </div>
                 <div className="flex justify-between pt-1 border-t border-slate-800">
                   <span className="text-slate-400">Трансформатори:</span>
-                  <span className="font-mono font-medium text-amber-400">{transformers}</span>
+                  <span className="font-medium text-amber-400">{transformers}</span>
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@ export const NetworkStats: React.FC<NetworkStatsProps> = ({
                     <span className="h-2 w-2 rounded-full bg-blue-500" />
                     110 кВ:
                   </span>
-                  <span className="font-mono text-slate-200">
+                  <span className="text-slate-200 font-medium">
                     {highVoltageLines.length} лін. · {highVoltageKm} км
                   </span>
                 </div>
@@ -126,7 +126,7 @@ export const NetworkStats: React.FC<NetworkStatsProps> = ({
                     <span className="h-2 w-2 rounded-full bg-amber-500" />
                     10 кВ:
                   </span>
-                  <span className="font-mono text-slate-200">
+                  <span className="text-slate-200 font-medium">
                     {mediumVoltageLines.length} лін. · {mediumVoltageKm} км
                   </span>
                 </div>
@@ -135,7 +135,7 @@ export const NetworkStats: React.FC<NetworkStatsProps> = ({
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     0.4 кВ:
                   </span>
-                  <span className="font-mono text-slate-200">
+                  <span className="text-slate-200 font-medium">
                     {lowVoltageLines.length} лін. · {lowVoltageKm} км
                   </span>
                 </div>

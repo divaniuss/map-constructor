@@ -22,6 +22,8 @@ export interface GridWorkspaceProps {
   onDeleteLine?: (id: string) => void;
   onCreateRoad?: (startX: number, startY: number, endX: number, endY: number) => void;
   onDeleteRoad?: (id: string) => void;
+  onDeleteObject?: (id: string) => void;
+  onCenterOn?: (x: number, y: number) => void;
   connectingPoleId?: string | null;
   onConnectingPoleChange?: (id: string | null) => void;
   activeTool: ToolMode;
@@ -47,6 +49,8 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
   onDeleteLine,
   onCreateRoad,
   onDeleteRoad,
+  onDeleteObject,
+  onCenterOn,
   connectingPoleId,
   onConnectingPoleChange,
   activeTool,
@@ -330,7 +334,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
         </button>
       </div>
 
-      <div className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-lg border border-slate-700/50 bg-[#0f172a]/80 px-2.5 py-1 text-[11px] font-mono text-slate-300 shadow-md backdrop-blur">
+      <div className="absolute right-4 top-4 z-20 flex items-center gap-2 rounded-lg border border-slate-700/50 bg-[#0f172a]/80 px-2.5 py-1 text-[11px] font-medium text-slate-300 shadow-md backdrop-blur">
         <span>{Math.round(zoom * 100)}%</span>
       </div>
 
@@ -746,6 +750,140 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
                 >
                   {obj.name}
                 </text>
+
+                {isSelected && activeTool === 'select' && (
+                  <g
+                    data-interactive="true"
+                    transform="translate(0, -56)"
+                    className="select-none"
+                  >
+                    <path
+                      d="M -5 16 L 0 22 L 5 16 Z"
+                      fill="#1e293b"
+                    />
+                    <path
+                      d="M -5 16 L 0 22 L 5 16"
+                      fill="none"
+                      stroke="#334155"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                    />
+                    <rect
+                      x="-46"
+                      y="-16"
+                      width="92"
+                      height="32"
+                      rx="8"
+                      fill="#1e293b"
+                      stroke="#334155"
+                      strokeWidth="1.2"
+                      filter="drop-shadow(0 4px 12px rgba(0, 0, 0, 0.45))"
+                      pointerEvents="all"
+                    />
+                    <g
+                      data-interactive="true"
+                      className="cursor-move group/move"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleObjectMouseDown(e, obj);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      pointerEvents="all"
+                    >
+                      <rect
+                        x="-40"
+                        y="-10"
+                        width="20"
+                        height="20"
+                        rx="4"
+                        fill="transparent"
+                        className="transition-colors hover:fill-slate-700/60"
+                      />
+                      <g
+                        stroke="#cbd5e1"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="transition-colors group-hover/move:stroke-white"
+                      >
+                        <line x1="-30" y1="-7" x2="-30" y2="7" />
+                        <polyline points="-32,-5 -30,-7 -28,-5" />
+                        <polyline points="-32,5 -30,7 -28,5" />
+                        <line x1="-37" y1="0" x2="-23" y2="0" />
+                        <polyline points="-35,-2 -37,0 -35,2" />
+                        <polyline points="-25,-2 -23,0 -25,2" />
+                      </g>
+                    </g>
+                    <g
+                      data-interactive="true"
+                      className="cursor-pointer group/trash"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteObject?.(obj.id);
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      pointerEvents="all"
+                    >
+                      <rect
+                        x="-10"
+                        y="-10"
+                        width="20"
+                        height="20"
+                        rx="4"
+                        fill="transparent"
+                        className="transition-colors hover:fill-rose-500/25"
+                      />
+                      <g
+                        stroke="#cbd5e1"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="transition-colors group-hover/trash:stroke-rose-400"
+                      >
+                        <path d="M -5 -4 h 10" />
+                        <path d="M -4 -4 v 8 a 1.5 1.5 0 0 0 1.5 1.5 h 5 a 1.5 1.5 0 0 0 1.5 -1.5 v -8" />
+                        <path d="M -2 -4 v -1.5 a 1 1 0 0 1 1 -1 h 2 a 1 1 0 0 1 1 1 v 1.5" />
+                        <line x1="-1.5" y1="-1.5" x2="-1.5" y2="3.5" />
+                        <line x1="1.5" y1="-1.5" x2="1.5" y2="3.5" />
+                      </g>
+                    </g>
+                    <g
+                      data-interactive="true"
+                      className="cursor-pointer group/info"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectObject(obj.id);
+                        onCenterOn?.(obj.x, obj.y);
+                      }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      pointerEvents="all"
+                    >
+                      <rect
+                        x="20"
+                        y="-10"
+                        width="20"
+                        height="20"
+                        rx="4"
+                        fill="transparent"
+                        className="transition-colors hover:fill-sky-500/25"
+                      />
+                      <g
+                        stroke="#cbd5e1"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                        className="transition-colors group-hover/info:stroke-sky-400"
+                      >
+                        <circle cx="30" cy="0" r="6" />
+                        <circle cx="30" cy="-2.5" r="0.6" fill="#cbd5e1" stroke="none" className="group-hover/info:fill-sky-400" />
+                        <line x1="30" y1="-0.5" x2="30" y2="3" />
+                      </g>
+                    </g>
+                  </g>
+                )}
               </g>
             );
           })}
@@ -755,7 +893,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       <div className="absolute bottom-4 left-4 z-20 h-28 w-44 rounded-xl border border-slate-700/70 bg-[#0f172a]/90 backdrop-blur shadow-2xl overflow-hidden p-1.5 flex flex-col">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-1 mb-1 flex items-center justify-between">
           <span>Міні-карта</span>
-          <span className="text-slate-500 font-mono text-[9px]">{objects.length} об. · {powerLines.length} лін. · {roads.length} дор.</span>
+          <span className="text-slate-500 text-[9px]">{objects.length} об. · {powerLines.length} лін. · {roads.length} дор.</span>
         </div>
         <div className="relative flex-1 rounded-lg bg-[#446d2c] border border-slate-800 overflow-hidden">
           {(() => {
