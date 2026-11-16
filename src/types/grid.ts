@@ -168,4 +168,3 @@ export const LIBRARY_ITEMS: LibraryItem[] = [
 export function getLibraryItem(type: MapObjectType): LibraryItem {
   return LIBRARY_ITEMS.find((item) => item.type === type) ?? LIBRARY_ITEMS[0];
 }
-пше 
