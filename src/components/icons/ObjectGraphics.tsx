@@ -559,18 +559,3 @@ export const ObjectGraphic: React.FC<
   }
 };
 
-
-export function getObjectAnchorOffset(type: MapObjectType): { x: number; y: number } {
-  switch (type) {
-    case 'wooden-pole':
-      return { x: 0, y: -14 };
-    case 'concrete-pole':
-      return { x: 0, y: -14 };
-    case 'metal-pole':
-      return { x: 0, y: -8 };
-    case 'transformer':
-      return { x: 0, y: -16 };
-    default:
-      return { x: 0, y: 0 };
-  }
-}

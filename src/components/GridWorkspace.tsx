@@ -1,26 +1,45 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Plus, Minus, Maximize2 } from 'lucide-react';
-import type { MapObjectData, PowerLineData, ToolMode, MapObjectType } from '../types/grid';
+import type { MapObjectData, PowerLineData, ToolMode, MapObjectType, PowerLineVoltage } from '../types/grid';
+import { isElectricalType, VOLTAGE_CONFIG } from '../types/grid';
 import { ObjectGraphic } from './icons';
+import { PowerLine } from './PowerLine';
 
 export interface GridWorkspaceProps {
   objects: MapObjectData[];
-  powerLines?: PowerLineData[];
+  powerLines: PowerLineData[];
   selectedObjectId: string | null;
+  selectedLineId?: string | null;
   onSelectObject: (id: string | null) => void;
+  onSelectLine?: (id: string | null) => void;
   onPlaceObject: (x: number, y: number) => void;
   onMoveObject?: (id: string, x: number, y: number) => void;
+  onCreateLine?: (startPoleId: string, endPoleId: string, voltage: PowerLineVoltage) => void;
+  onDeleteLine?: (id: string) => void;
+  connectingPoleId?: string | null;
+  onConnectingPoleChange?: (id: string | null) => void;
   activeTool: ToolMode;
   placingType: MapObjectType | null;
+  lineVoltage: PowerLineVoltage;
+  isPowerOn: boolean;
 }
 
 export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
   objects,
+  powerLines,
   selectedObjectId,
+  selectedLineId,
   onSelectObject,
+  onSelectLine,
   onPlaceObject,
   onMoveObject,
+  onCreateLine,
+  onDeleteLine,
+  connectingPoleId,
+  onConnectingPoleChange,
   activeTool,
+  lineVoltage,
+  isPowerOn,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -47,6 +66,8 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
     width: 1000,
     height: 600,
   });
+
+  const [cursorCoords, setCursorCoords] = useState<{ x: number; y: number } | null>(null);
 
   const getSvgCoordinates = useCallback(
     (clientX: number, clientY: number) => {
@@ -102,6 +123,14 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       return;
     }
 
+    if (activeTool === 'line' && connectingPoleId) {
+      const coords = getSvgCoordinates(e.clientX, e.clientY);
+      setCursorCoords({
+        x: Math.round(coords.x),
+        y: Math.round(coords.y),
+      });
+    }
+
     if (draggingId && onMoveObject) {
       const dx = (e.clientX - dragStartRef.current.mouseX) / zoom;
       const dy = (e.clientY - dragStartRef.current.mouseY) / zoom;
@@ -118,7 +147,16 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
 
   const handleCanvasClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (isPanning) return;
+    const target = e.target as Element | null;
+    if (target?.closest?.('[data-interactive="true"]')) {
+      return;
+    }
     const coords = getSvgCoordinates(e.clientX, e.clientY);
+
+    if (activeTool === 'line') {
+      onConnectingPoleChange?.(null);
+      return;
+    }
 
     if (activeTool === 'place') {
       onPlaceObject(Math.round(coords.x), Math.round(coords.y));
@@ -127,6 +165,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
 
     if (activeTool === 'select') {
       onSelectObject(null);
+      onSelectLine?.(null);
     }
   };
 
@@ -138,8 +177,25 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       return;
     }
     e.stopPropagation();
+
+    if (activeTool === 'line') {
+      if (!isElectricalType(obj.type)) {
+        return;
+      }
+      if (!connectingPoleId) {
+        onConnectingPoleChange?.(obj.id);
+      } else {
+        if (connectingPoleId !== obj.id) {
+          onCreateLine?.(connectingPoleId, obj.id, lineVoltage);
+        }
+        onConnectingPoleChange?.(null);
+      }
+      return;
+    }
+
     if (activeTool === 'select') {
       onSelectObject(obj.id);
+      onSelectLine?.(null);
       setDraggingId(obj.id);
       dragStartRef.current = {
         mouseX: e.clientX,
@@ -163,6 +219,14 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       setDraggingId(null);
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onConnectingPoleChange?.(null);
+        onSelectObject(null);
+        onSelectLine?.(null);
+      }
+    };
+
     const updateSize = () => {
       if (svgRef.current) {
         const rect = svgRef.current.getBoundingClientRect();
@@ -174,12 +238,14 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
 
     updateSize();
     window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('resize', updateSize);
     return () => {
       window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', updateSize);
     };
-  }, []);
+  }, [onConnectingPoleChange, onSelectObject, onSelectLine]);
 
   return (
     <div
@@ -311,47 +377,176 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
 
           <circle cx="0" cy="0" r="4" fill="#facc15" />
 
+          {powerLines.map((line) => {
+            const start = objects.find((o) => o.id === line.startPoleId);
+            const end = objects.find((o) => o.id === line.endPoleId);
+            if (!start || !end) return null;
+            return (
+              <PowerLine
+                key={line.id}
+                line={line}
+                start={start}
+                end={end}
+                isPowerOn={isPowerOn}
+                isSelected={selectedLineId === line.id}
+                activeTool={activeTool}
+                onSelect={(id) => {
+                  onSelectLine?.(id);
+                  onSelectObject(null);
+                }}
+                onDelete={(id) => onDeleteLine?.(id)}
+              />
+            );
+          })}
+
+          {activeTool === 'line' && connectingPoleId && cursorCoords && (() => {
+            const startObj = objects.find((o) => o.id === connectingPoleId);
+            if (!startObj) return null;
+            const cfg = VOLTAGE_CONFIG[lineVoltage];
+            const distMeters = Math.round(
+              Math.hypot(cursorCoords.x - startObj.x, cursorCoords.y - startObj.y)
+            );
+            const midX = (startObj.x + cursorCoords.x) / 2;
+            const midY = (startObj.y + cursorCoords.y) / 2;
+
+            return (
+              <g pointerEvents="none">
+                <line
+                  x1={startObj.x}
+                  y1={startObj.y}
+                  x2={cursorCoords.x}
+                  y2={cursorCoords.y}
+                  stroke={cfg.color}
+                  strokeWidth={cfg.strokeWidth}
+                  strokeDasharray="6 4"
+                  strokeLinecap="round"
+                  opacity="0.85"
+                />
+                <circle
+                  cx={cursorCoords.x}
+                  cy={cursorCoords.y}
+                  r="5"
+                  fill={cfg.color}
+                />
+                <g transform={`translate(${midX}, ${midY - 14})`}>
+                  <rect
+                    x="-28"
+                    y="-10"
+                    width="56"
+                    height="20"
+                    rx="6"
+                    fill="#0f172a"
+                    stroke={cfg.color}
+                    strokeWidth="1"
+                  />
+                  <text
+                    x="0"
+                    y="3.5"
+                    textAnchor="middle"
+                    fill="#ffffff"
+                    fontSize="9"
+                    fontWeight="700"
+                  >
+                    {distMeters} м
+                  </text>
+                </g>
+              </g>
+            );
+          })()}
+
           {objects.map((obj) => {
             const isSelected = selectedObjectId === obj.id;
+            const isConnectingStart = connectingPoleId === obj.id;
+            const isElectrical = isElectricalType(obj.type);
+
+            let cursorClass = 'cursor-default';
+            if (activeTool === 'delete' || activeTool === 'delete-object') {
+              cursorClass = 'cursor-pointer';
+            } else if (activeTool === 'select') {
+              cursorClass = 'cursor-move';
+            } else if (activeTool === 'line') {
+              cursorClass = isElectrical ? 'cursor-pointer' : 'cursor-not-allowed';
+            }
+
             return (
               <g
                 key={obj.id}
+                data-interactive="true"
+                data-object-id={obj.id}
                 transform={`translate(${obj.x}, ${obj.y})`}
                 onMouseDown={(e) => handleObjectMouseDown(e, obj)}
-                onClick={(e) => e.stopPropagation()}
-                className={
-                  activeTool === 'delete' || activeTool === 'delete-object'
-                    ? 'cursor-pointer'
-                    : activeTool === 'select'
-                    ? 'cursor-move'
-                    : 'cursor-default'
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (activeTool === 'select') {
+                    onSelectObject(obj.id);
+                    onSelectLine?.(null);
+                  }
+                }}
+                className={cursorClass}
               >
                 <rect
+                  data-interactive="true"
                   x="-28"
                   y="-28"
                   width="56"
                   height="56"
                   rx="8"
-                  fill="transparent"
+                  fill="rgba(0, 0, 0, 0.001)"
                   stroke="transparent"
                   strokeWidth="1.5"
+                  style={{ pointerEvents: 'all' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (activeTool === 'select') {
+                      onSelectObject(obj.id);
+                      onSelectLine?.(null);
+                    }
+                  }}
+                  onMouseDown={(e) => handleObjectMouseDown(e, obj)}
                   className={`transition-colors duration-150 ${
                     activeTool === 'delete' || activeTool === 'delete-object'
                       ? 'hover:fill-red-500/20 hover:stroke-red-500/70'
+                      : activeTool === 'line'
+                      ? isElectrical
+                        ? 'hover:fill-amber-400/15 hover:stroke-amber-400/80'
+                        : ''
                       : isSelected
                       ? ''
                       : 'hover:fill-sky-400/10 hover:stroke-sky-400/40'
                   }`}
                 />
                 <rect
+                  data-interactive="true"
                   x="-36"
                   y="22"
                   width="72"
                   height="18"
                   rx="4"
-                  fill="transparent"
+                  fill="rgba(0, 0, 0, 0.001)"
+                  style={{ pointerEvents: 'all' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (activeTool === 'select') {
+                      onSelectObject(obj.id);
+                      onSelectLine?.(null);
+                    }
+                  }}
+                  onMouseDown={(e) => handleObjectMouseDown(e, obj)}
                 />
+
+                {isConnectingStart && (
+                  <circle
+                    cx="0"
+                    cy="0"
+                    r="34"
+                    fill="none"
+                    stroke={VOLTAGE_CONFIG[lineVoltage].color}
+                    strokeWidth="2.5"
+                    strokeDasharray="6 4"
+                    className="animate-spin"
+                    style={{ animationDuration: '8s' }}
+                  />
+                )}
 
                 {isSelected && (
                   <g pointerEvents="none">
@@ -424,7 +619,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       <div className="absolute bottom-4 left-4 z-20 h-28 w-44 rounded-xl border border-slate-700/70 bg-[#0f172a]/90 backdrop-blur shadow-2xl overflow-hidden p-1.5 flex flex-col">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-1 mb-1 flex items-center justify-between">
           <span>Міні-карта</span>
-          <span className="text-slate-500 font-mono text-[9px]">{objects.length} об.</span>
+          <span className="text-slate-500 font-mono text-[9px]">{objects.length} об. · {powerLines.length} лін.</span>
         </div>
         <div className="relative flex-1 rounded-lg bg-[#446d2c] border border-slate-800 overflow-hidden">
           {(() => {
@@ -459,6 +654,25 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
                   strokeWidth={worldW * 0.06}
                   opacity="0.4"
                 />
+                {powerLines.map((line) => {
+                  const p1 = objects.find((o) => o.id === line.startPoleId);
+                  const p2 = objects.find((o) => o.id === line.endPoleId);
+                  if (!p1 || !p2) return null;
+                  const cfg = VOLTAGE_CONFIG[line.voltage];
+                  return (
+                    <line
+                      key={line.id}
+                      x1={p1.x}
+                      y1={p1.y}
+                      x2={p2.x}
+                      y2={p2.y}
+                      stroke={isPowerOn ? cfg.color : '#64748b'}
+                      strokeWidth={worldW * 0.0035}
+                      strokeDasharray={line.voltage === 'high' ? '6 2' : undefined}
+                      opacity="0.85"
+                    />
+                  );
+                })}
                 {objects.map((obj) => (
                   <circle
                     key={obj.id}

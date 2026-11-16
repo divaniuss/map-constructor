@@ -170,3 +170,19 @@ export const LIBRARY_ITEMS: LibraryItem[] = [
 export function getLibraryItem(type: MapObjectType): LibraryItem {
   return LIBRARY_ITEMS.find((item) => item.type === type) ?? LIBRARY_ITEMS[0];
 }
+
+export function getObjectAnchorOffset(type: MapObjectType): { x: number; y: number } {
+  switch (type) {
+    case 'wooden-pole':
+      return { x: 0, y: -14 };
+    case 'concrete-pole':
+      return { x: 0, y: -14 };
+    case 'metal-pole':
+      return { x: 0, y: -8 };
+    case 'transformer':
+      return { x: 0, y: -16 };
+    default:
+      return { x: 0, y: 0 };
+  }
+}
+

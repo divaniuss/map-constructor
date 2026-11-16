@@ -67,7 +67,6 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {/*Електричні опори */}
       <div className="flex flex-col">
         {groups.map((group) => {
           const isOpen = !!openGroups[group.id];
@@ -104,7 +103,6 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
                 </div>
               </button>
 
-              {/* Випадаючий список підтипів */}
               {isOpen && (
                 <div className="mt-1.5 flex flex-col gap-1 pl-3 pr-1 py-1 border-l-2 border-slate-800">
                   {group.items.map((item) => {
@@ -150,7 +148,6 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
         })}
       </div>
 
-      {/*Окремі кнопки об`єктів*/}
       <div className="flex flex-col gap-1.5">
         {singleItems.map((item) => {
           const isSelected = isPlacing && selectedType === item.type;
@@ -191,7 +188,6 @@ export const ObjectLibrary: React.FC<ObjectLibraryProps> = ({
         })}
       </div>
 
-      {/* Інформаційна плашка про активний вибір */}
       {isPlacing && selectedType && (
         <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-blue-500/30 bg-blue-500/10 p-2.5 text-xs text-blue-200">
           <MapPin className="h-4 w-4 shrink-0 text-blue-400 animate-bounce" />

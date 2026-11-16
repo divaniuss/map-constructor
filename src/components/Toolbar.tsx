@@ -69,7 +69,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         )}
       </button>
 
-        {/*ПРОКЛАДАННЯ ЛІНІЙ*/}
       <div className="flex flex-col">
         <div
           className={`flex items-center justify-between rounded-xl transition-all ${
@@ -160,7 +159,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         )}
       </div>
 
-      {/*РЕЖИМ ВИДАЛЕННЯ*/}
       <div className="flex flex-col">
         <div
           className={`flex items-center justify-between rounded-xl transition-all ${
