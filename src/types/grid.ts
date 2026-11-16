@@ -7,10 +7,12 @@ export type MapObjectType = ElectricalType | TerrainType;
 
 export type PowerLineVoltage = 'low' | 'medium' | 'high';
 
+
 export type ToolMode =
   | 'select'
   | 'place'
   | 'line'
+  | 'delete'
   | 'delete-object'
   | 'delete-line';
 
