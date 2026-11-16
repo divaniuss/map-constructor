@@ -13,6 +13,7 @@ import type {
   MapObjectData,
   PowerLineData,
   PowerLineVoltage,
+  RoadData,
 } from '../types/grid';
 import { VOLTAGE_CONFIG, getLibraryItem, isPoleType } from '../types/grid';
 import { ObjectGraphic } from './icons';
@@ -217,14 +218,17 @@ const ObjectEditor: React.FC<ObjectEditorProps> = ({
 export interface ObjectPropertiesProps {
   selectedObject: MapObjectData | null;
   selectedLine: PowerLineData | null;
+  selectedRoad?: RoadData | null;
   objects: MapObjectData[];
   powerLines: PowerLineData[];
   onSelectObject: (id: string | null) => void;
   onSelectLine: (id: string | null) => void;
+  onSelectRoad?: (id: string | null) => void;
   onUpdateObject: (id: string, updates: Partial<MapObjectData>) => void;
   onUpdateLineVoltage: (id: string, voltage: PowerLineVoltage) => void;
   onDeleteObject: (id: string) => void;
   onDeleteLine: (id: string) => void;
+  onDeleteRoad?: (id: string) => void;
   onCenterOn?: (x: number, y: number) => void;
   calculateLineLength: (line: PowerLineData) => number;
 }
@@ -232,6 +236,7 @@ export interface ObjectPropertiesProps {
 export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
   selectedObject,
   selectedLine,
+  selectedRoad,
   objects,
   powerLines,
   onSelectObject,
@@ -240,6 +245,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
   onUpdateLineVoltage,
   onDeleteObject,
   onDeleteLine,
+  onDeleteRoad,
   onCenterOn,
   calculateLineLength,
 }) => {
@@ -253,11 +259,21 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-slate-800 pb-3">
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-          {selectedObject ? 'Властивості об`єкта' : selectedLine ? 'Властивості лінії' : 'Властивості'}
+          {selectedObject
+            ? 'Властивості об`єкта'
+            : selectedLine
+            ? 'Властивості лінії'
+            : selectedRoad
+            ? 'Властивості дороги'
+            : 'Властивості'}
         </span>
-        {(selectedObject || selectedLine) && (
+        {(selectedObject || selectedLine || selectedRoad) && (
           <span className="font-mono text-[11px] font-bold text-sky-400">
-            {selectedObject ? selectedObject.id : selectedLine?.id}
+            {selectedObject
+              ? selectedObject.id
+              : selectedLine
+              ? selectedLine.id
+              : selectedRoad?.id}
           </span>
         )}
       </div>
@@ -397,7 +413,77 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
           );
         })()}
 
-        {!selectedObject && !selectedLine && (
+        {selectedRoad && (() => {
+          const lengthM = Math.round(
+            Math.hypot(selectedRoad.endX - selectedRoad.startX, selectedRoad.endY - selectedRoad.startY)
+          );
+          const midX = (selectedRoad.startX + selectedRoad.endX) / 2;
+          const midY = (selectedRoad.startY + selectedRoad.endY) / 2;
+
+          return (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-slate-800 bg-slate-800/40 p-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-700/60 bg-slate-900 text-slate-300 text-base">
+                    🛣️
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-slate-100 block">
+                      Асфальтна дорога
+                    </span>
+                    <span className="font-mono text-xs text-slate-400">
+                      {selectedRoad.id}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Довжина ділянки:</span>
+                  <span className="font-mono font-semibold text-amber-400 text-sm">
+                    {lengthM} м
+                  </span>
+                </div>
+                <div className="h-px w-full bg-slate-800" />
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Початок:</span>
+                  <span className="font-mono text-slate-300">({selectedRoad.startX}, {selectedRoad.startY})</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400">Кінець:</span>
+                  <span className="font-mono text-slate-300">({selectedRoad.endX}, {selectedRoad.endY})</span>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col gap-2">
+                {onCenterOn && (
+                  <button
+                    type="button"
+                    onClick={() => onCenterOn(midX, midY)}
+                    className="flex items-center justify-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/80 py-2 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700 hover:text-white"
+                  >
+                    <Crosshair className="h-3.5 w-3.5 text-sky-400" />
+                    <span>Центрувати на дорозі</span>
+                  </button>
+                )}
+
+                {onDeleteRoad && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteRoad(selectedRoad.id)}
+                    className="flex items-center justify-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 py-2 text-xs font-medium text-red-400 transition-colors hover:bg-red-500 hover:text-white"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Видалити дорогу</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+
+        {!selectedObject && !selectedLine && !selectedRoad && (
           <div className="flex h-full flex-col items-center justify-center text-center p-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/60 border border-slate-700/50 text-slate-500 mb-3">
               <Layers className="h-6 w-6" />
@@ -406,7 +492,7 @@ export const ObjectProperties: React.FC<ObjectPropertiesProps> = ({
               Нічого не обрано
             </p>
             <p className="mt-1 text-[11px] text-slate-500 max-w-[180px]">
-              Оберіть опору, споруду або лінію на карті для перегляду та редагування
+              Оберіть опору, дорогу або лінію на карті для перегляду та редагування
             </p>
           </div>
         )}

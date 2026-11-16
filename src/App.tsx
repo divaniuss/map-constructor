@@ -11,6 +11,7 @@ import type {
   PowerLineVoltage,
   MapObjectData,
   PowerLineData,
+  RoadData,
 } from './types/grid';
 import { getLibraryItem, isPoleType } from './types/grid';
 import { Toolbar } from './components/Toolbar';
@@ -29,6 +30,8 @@ export function App() {
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
   const [powerLines, setPowerLines] = useState<PowerLineData[]>([]);
   const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+  const [roads, setRoads] = useState<RoadData[]>([]);
+  const [selectedRoadId, setSelectedRoadId] = useState<string | null>(null);
   const [connectingPoleId, setConnectingPoleId] = useState<string | null>(null);
 
   const poleCount = objects.filter((o) => isPoleType(o.type)).length;
@@ -82,6 +85,7 @@ export function App() {
     setObjects((prev) => [...prev, newObj]);
     setSelectedObjectId(newObj.id);
     setSelectedLineId(null);
+    setSelectedRoadId(null);
   };
 
   const handleSelectObjectOnMap = (id: string | null) => {
@@ -101,6 +105,7 @@ export function App() {
     setSelectedObjectId(id);
     if (id) {
       setSelectedLineId(null);
+      setSelectedRoadId(null);
     }
   };
 
@@ -122,11 +127,43 @@ export function App() {
     );
   };
 
+  const handleCreateRoad = (
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ) => {
+    const existingNums = roads
+      .map((r) => parseInt(r.id.replace('#ROAD-', ''), 10))
+      .filter((n) => !isNaN(n));
+    const nextNum = existingNums.length > 0 ? Math.max(...existingNums) + 1 : 1;
+    const newRoad: RoadData = {
+      id: `#ROAD-${String(nextNum).padStart(3, '0')}`,
+      startX,
+      startY,
+      endX,
+      endY,
+    };
+    setRoads((prev) => [...prev, newRoad]);
+    setSelectedRoadId(newRoad.id);
+    setSelectedObjectId(null);
+    setSelectedLineId(null);
+  };
+
+  const handleDeleteRoad = (id: string) => {
+    setRoads((prev) => prev.filter((r) => r.id !== id));
+    if (selectedRoadId === id) {
+      setSelectedRoadId(null);
+    }
+  };
+
   const handleClearAll = () => {
     setObjects([]);
     setPowerLines([]);
+    setRoads([]);
     setSelectedObjectId(null);
     setSelectedLineId(null);
+    setSelectedRoadId(null);
     setConnectingPoleId(null);
   };
 
@@ -162,6 +199,7 @@ export function App() {
     setPowerLines((prev) => [...prev, newLine]);
     setSelectedLineId(newLine.id);
     setSelectedObjectId(null);
+    setSelectedRoadId(null);
   };
 
   const handleDeleteLine = (id: string) => {
@@ -180,11 +218,14 @@ export function App() {
     } else if (selectedLineId) {
       setPowerLines((prev) => prev.filter((l) => l.id !== selectedLineId));
       setSelectedLineId(null);
+    } else if (selectedRoadId) {
+      handleDeleteRoad(selectedRoadId);
     }
   };
 
   const selectedObject = objects.find((o) => o.id === selectedObjectId);
   const selectedLine = powerLines.find((l) => l.id === selectedLineId);
+  const selectedRoad = roads.find((r) => r.id === selectedRoadId);
 
   return (
     <div className="flex h-screen w-screen flex-col bg-[#0b1120] text-slate-200 select-none">
@@ -264,7 +305,7 @@ export function App() {
               lineVoltage={lineVoltage}
               onSelectVoltage={setLineVoltage}
               lineStartPoleId={connectingPoleId}
-              hasSelection={!!selectedObjectId || !!selectedLineId}
+              hasSelection={!!selectedObjectId || !!selectedLineId || !!selectedRoadId}
               onDeleteSelected={handleDeleteSelected}
             />
 
@@ -286,19 +327,31 @@ export function App() {
           <GridWorkspace
             objects={objects}
             powerLines={powerLines}
+            roads={roads}
             selectedObjectId={selectedObjectId}
             selectedLineId={selectedLineId}
+            selectedRoadId={selectedRoadId}
             onSelectObject={handleSelectObjectOnMap}
             onSelectLine={(id) => {
               setSelectedLineId(id);
               if (id) {
                 setSelectedObjectId(null);
+                setSelectedRoadId(null);
+              }
+            }}
+            onSelectRoad={(id) => {
+              setSelectedRoadId(id);
+              if (id) {
+                setSelectedObjectId(null);
+                setSelectedLineId(null);
               }
             }}
             onPlaceObject={handlePlaceObject}
             onMoveObject={handleMoveObject}
             onCreateLine={handleCreateLine}
             onDeleteLine={handleDeleteLine}
+            onCreateRoad={handleCreateRoad}
+            onDeleteRoad={handleDeleteRoad}
             connectingPoleId={connectingPoleId}
             onConnectingPoleChange={setConnectingPoleId}
             activeTool={activeTool}
@@ -313,6 +366,7 @@ export function App() {
           <ObjectProperties
             selectedObject={selectedObject ?? null}
             selectedLine={selectedLine ?? null}
+            selectedRoad={selectedRoad ?? null}
             objects={objects}
             powerLines={powerLines}
             onSelectObject={handleSelectObjectOnMap}
@@ -320,6 +374,14 @@ export function App() {
               setSelectedLineId(id);
               if (id) {
                 setSelectedObjectId(null);
+                setSelectedRoadId(null);
+              }
+            }}
+            onSelectRoad={(id) => {
+              setSelectedRoadId(id);
+              if (id) {
+                setSelectedObjectId(null);
+                setSelectedLineId(null);
               }
             }}
             onUpdateObject={handleUpdateObject}
@@ -331,6 +393,7 @@ export function App() {
               if (connectingPoleId === id) setConnectingPoleId(null);
             }}
             onDeleteLine={handleDeleteLine}
+            onDeleteRoad={handleDeleteRoad}
             onCenterOn={handleCenterOn}
             calculateLineLength={calculateLineLength}
           />
@@ -340,6 +403,7 @@ export function App() {
       <NetworkStats
         objects={objects}
         powerLines={powerLines}
+        roads={roads}
         activeTool={activeTool}
         totalLengthKm={totalLengthKm}
         calculateLineLength={calculateLineLength}

@@ -32,6 +32,14 @@ export interface PowerLineData {
   endPoleId: string;
 }
 
+export interface RoadData {
+  id: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+}
+
 export interface LibraryItem {
   type: MapObjectType;
   category: ObjectCategory;

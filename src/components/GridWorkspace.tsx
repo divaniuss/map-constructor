@@ -1,21 +1,27 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { Plus, Minus, Maximize2 } from 'lucide-react';
-import type { MapObjectData, PowerLineData, ToolMode, MapObjectType, PowerLineVoltage } from '../types/grid';
+import type { MapObjectData, PowerLineData, ToolMode, MapObjectType, PowerLineVoltage, RoadData } from '../types/grid';
 import { isElectricalType, VOLTAGE_CONFIG } from '../types/grid';
 import { ObjectGraphic } from './icons';
 import { PowerLine } from './PowerLine';
+import { Road } from './Road';
 
 export interface GridWorkspaceProps {
   objects: MapObjectData[];
   powerLines: PowerLineData[];
+  roads: RoadData[];
   selectedObjectId: string | null;
   selectedLineId?: string | null;
+  selectedRoadId?: string | null;
   onSelectObject: (id: string | null) => void;
   onSelectLine?: (id: string | null) => void;
+  onSelectRoad?: (id: string | null) => void;
   onPlaceObject: (x: number, y: number) => void;
   onMoveObject?: (id: string, x: number, y: number) => void;
   onCreateLine?: (startPoleId: string, endPoleId: string, voltage: PowerLineVoltage) => void;
   onDeleteLine?: (id: string) => void;
+  onCreateRoad?: (startX: number, startY: number, endX: number, endY: number) => void;
+  onDeleteRoad?: (id: string) => void;
   connectingPoleId?: string | null;
   onConnectingPoleChange?: (id: string | null) => void;
   activeTool: ToolMode;
@@ -28,17 +34,23 @@ export interface GridWorkspaceProps {
 export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
   objects,
   powerLines,
+  roads,
   selectedObjectId,
   selectedLineId,
+  selectedRoadId,
   onSelectObject,
   onSelectLine,
+  onSelectRoad,
   onPlaceObject,
   onMoveObject,
   onCreateLine,
   onDeleteLine,
+  onCreateRoad,
+  onDeleteRoad,
   connectingPoleId,
   onConnectingPoleChange,
   activeTool,
+  placingType,
   lineVoltage,
   isPowerOn,
   centerTarget,
@@ -70,6 +82,15 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
   });
 
   const [cursorCoords, setCursorCoords] = useState<{ x: number; y: number } | null>(null);
+  const [roadStartPoint, setRoadStartPoint] = useState<{ x: number; y: number } | null>(null);
+  const [prevTool, setPrevTool] = useState({ activeTool, placingType });
+
+  if (prevTool.activeTool !== activeTool || prevTool.placingType !== placingType) {
+    setPrevTool({ activeTool, placingType });
+    if (activeTool !== 'place' || placingType !== 'road') {
+      setRoadStartPoint(null);
+    }
+  }
 
   const getSvgCoordinates = useCallback(
     (clientX: number, clientY: number) => {
@@ -125,7 +146,10 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       return;
     }
 
-    if (activeTool === 'line' && connectingPoleId) {
+    if (
+      (activeTool === 'line' && connectingPoleId) ||
+      (activeTool === 'place' && placingType === 'road' && roadStartPoint)
+    ) {
       const coords = getSvgCoordinates(e.clientX, e.clientY);
       setCursorCoords({
         x: Math.round(coords.x),
@@ -161,6 +185,17 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
     }
 
     if (activeTool === 'place') {
+      if (placingType === 'road') {
+        const x = Math.round(coords.x);
+        const y = Math.round(coords.y);
+        if (!roadStartPoint) {
+          setRoadStartPoint({ x, y });
+        } else {
+          onCreateRoad?.(roadStartPoint.x, roadStartPoint.y, x, y);
+          setRoadStartPoint({ x, y });
+        }
+        return;
+      }
       onPlaceObject(Math.round(coords.x), Math.round(coords.y));
       return;
     }
@@ -168,6 +203,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
     if (activeTool === 'select') {
       onSelectObject(null);
       onSelectLine?.(null);
+      onSelectRoad?.(null);
     }
   };
 
@@ -224,8 +260,10 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onConnectingPoleChange?.(null);
+        setRoadStartPoint(null);
         onSelectObject(null);
         onSelectLine?.(null);
+        onSelectRoad?.(null);
       }
     };
 
@@ -247,7 +285,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('resize', updateSize);
     };
-  }, [onConnectingPoleChange, onSelectObject, onSelectLine]);
+  }, [onConnectingPoleChange, onSelectObject, onSelectLine, onSelectRoad]);
 
   useEffect(() => {
     if (centerTarget && svgRef.current) {
@@ -387,6 +425,93 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
           />
 
           <circle cx="0" cy="0" r="4" fill="#facc15" />
+
+          {roads.map((road) => (
+            <Road
+              key={road.id}
+              road={road}
+              isSelected={selectedRoadId === road.id}
+              activeTool={activeTool}
+              onSelect={(id) => {
+                onSelectRoad?.(id);
+                onSelectObject(null);
+                onSelectLine?.(null);
+              }}
+              onDelete={(id) => onDeleteRoad?.(id)}
+            />
+          ))}
+
+          {activeTool === 'place' && placingType === 'road' && roadStartPoint && cursorCoords && (() => {
+            const distM = Math.round(
+              Math.hypot(cursorCoords.x - roadStartPoint.x, cursorCoords.y - roadStartPoint.y)
+            );
+            const midX = (roadStartPoint.x + cursorCoords.x) / 2;
+            const midY = (roadStartPoint.y + cursorCoords.y) / 2;
+
+            return (
+              <g pointerEvents="none">
+                <line
+                  x1={roadStartPoint.x}
+                  y1={roadStartPoint.y}
+                  x2={cursorCoords.x}
+                  y2={cursorCoords.y}
+                  stroke="#1e293b"
+                  strokeWidth="28"
+                  strokeLinecap="round"
+                  opacity="0.8"
+                />
+                <line
+                  x1={roadStartPoint.x}
+                  y1={roadStartPoint.y}
+                  x2={cursorCoords.x}
+                  y2={cursorCoords.y}
+                  stroke="#334155"
+                  strokeWidth="24"
+                  strokeLinecap="round"
+                  opacity="0.9"
+                />
+                <line
+                  x1={roadStartPoint.x}
+                  y1={roadStartPoint.y}
+                  x2={cursorCoords.x}
+                  y2={cursorCoords.y}
+                  stroke="#f8fafc"
+                  strokeWidth="2"
+                  strokeDasharray="10 8"
+                  strokeLinecap="butt"
+                  opacity="0.9"
+                />
+                <circle
+                  cx={cursorCoords.x}
+                  cy={cursorCoords.y}
+                  r="6"
+                  fill="#38bdf8"
+                />
+                <g transform={`translate(${midX}, ${midY - 14})`}>
+                  <rect
+                    x="-28"
+                    y="-10"
+                    width="56"
+                    height="20"
+                    rx="6"
+                    fill="#0f172a"
+                    stroke="#38bdf8"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x="0"
+                    y="3.5"
+                    textAnchor="middle"
+                    fill="#ffffff"
+                    fontSize="9"
+                    fontWeight="700"
+                  >
+                    {distM} м
+                  </text>
+                </g>
+              </g>
+            );
+          })()}
 
           {powerLines.map((line) => {
             const start = objects.find((o) => o.id === line.startPoleId);
@@ -630,7 +755,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       <div className="absolute bottom-4 left-4 z-20 h-28 w-44 rounded-xl border border-slate-700/70 bg-[#0f172a]/90 backdrop-blur shadow-2xl overflow-hidden p-1.5 flex flex-col">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-1 mb-1 flex items-center justify-between">
           <span>Міні-карта</span>
-          <span className="text-slate-500 font-mono text-[9px]">{objects.length} об. · {powerLines.length} лін.</span>
+          <span className="text-slate-500 font-mono text-[9px]">{objects.length} об. · {powerLines.length} лін. · {roads.length} дор.</span>
         </div>
         <div className="relative flex-1 rounded-lg bg-[#446d2c] border border-slate-800 overflow-hidden">
           {(() => {
@@ -665,6 +790,18 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
                   strokeWidth={worldW * 0.06}
                   opacity="0.4"
                 />
+                {roads.map((road) => (
+                  <line
+                    key={road.id}
+                    x1={road.startX}
+                    y1={road.startY}
+                    x2={road.endX}
+                    y2={road.endY}
+                    stroke="#1e293b"
+                    strokeWidth={worldW * 0.007}
+                    strokeLinecap="round"
+                  />
+                ))}
                 {powerLines.map((line) => {
                   const p1 = objects.find((o) => o.id === line.startPoleId);
                   const p2 = objects.find((o) => o.id === line.endPoleId);

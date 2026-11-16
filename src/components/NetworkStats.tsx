@@ -12,12 +12,14 @@ import type {
   MapObjectData,
   PowerLineData,
   ToolMode,
+  RoadData,
 } from '../types/grid';
 import { isPoleType } from '../types/grid';
 
 export interface NetworkStatsProps {
   objects: MapObjectData[];
   powerLines: PowerLineData[];
+  roads?: RoadData[];
   activeTool: ToolMode;
   totalLengthKm: string;
   calculateLineLength: (line: PowerLineData) => number;
@@ -26,6 +28,7 @@ export interface NetworkStatsProps {
 export const NetworkStats: React.FC<NetworkStatsProps> = ({
   objects,
   powerLines,
+  roads = [],
   activeTool,
   totalLengthKm,
   calculateLineLength,
@@ -37,6 +40,13 @@ export const NetworkStats: React.FC<NetworkStatsProps> = ({
   const woodenPoles = objects.filter((o) => o.type === 'wooden-pole').length;
   const totalPoles = metalPoles + concretePoles + woodenPoles;
   const transformers = objects.filter((o) => o.type === 'transformer').length;
+
+  const totalRoadsKm = (
+    roads.reduce(
+      (acc, r) => acc + Math.round(Math.hypot(r.endX - r.startX, r.endY - r.startY)),
+      0
+    ) / 1000
+  ).toFixed(2);
 
   const highVoltageLines = powerLines.filter((l) => l.voltage === 'high');
   const mediumVoltageLines = powerLines.filter((l) => l.voltage === 'medium');
@@ -179,6 +189,9 @@ export const NetworkStats: React.FC<NetworkStatsProps> = ({
           <span>{powerLines.length} ліній</span>
           <span>{totalLengthKm} км</span>
           <span>{transformers} трансформатор</span>
+          {roads.length > 0 && (
+            <span>{roads.length} дор. ({totalRoadsKm} км)</span>
+          )}
           {disconnectedPoles.length > 0 && (
             <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
               <AlertTriangle className="h-3 w-3" />
