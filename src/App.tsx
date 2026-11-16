@@ -23,42 +23,8 @@ export function App() {
   const [lineVoltage, setLineVoltage] = useState<PowerLineVoltage>('high');
   const [isPowerOn, setIsPowerOn] = useState<boolean>(true);
 
-  const [objects, setObjects] = useState<MapObjectData[]>([
-    {
-      id: '#OP-001',
-      type: 'metal-pole',
-      category: 'electrical',
-      name: 'Металева опора',
-      x: 300,
-      y: 120,
-    },
-    {
-      id: '#OP-002',
-      type: 'metal-pole',
-      category: 'electrical',
-      name: 'Металева опора',
-      x: 120,
-      y: 280,
-    },
-    {
-      id: '#OP-003',
-      type: 'metal-pole',
-      category: 'electrical',
-      name: 'Металева опора',
-      x: 520,
-      y: 320,
-    },
-    {
-      id: '#TR-001',
-      type: 'transformer',
-      category: 'electrical',
-      name: 'Трансформатор',
-      x: 720,
-      y: 310,
-    },
-  ]);
-
-  const [selectedObjectId, setSelectedObjectId] = useState<string | null>('#OP-003');
+  const [objects, setObjects] = useState<MapObjectData[]>([]);
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
 
   const poleCount = objects.filter((o) => isPoleType(o.type)).length;
   const transformerCount = objects.filter((o) => o.type === 'transformer').length;

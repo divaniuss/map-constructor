@@ -43,6 +43,11 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
     objY: 0,
   });
 
+  const [viewportSize, setViewportSize] = useState<{ width: number; height: number }>({
+    width: 1000,
+    height: 600,
+  });
+
   const getSvgCoordinates = useCallback(
     (clientX: number, clientY: number) => {
       if (!svgRef.current) return { x: 0, y: 0 };
@@ -154,8 +159,23 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       setIsPanning(false);
       setDraggingId(null);
     };
+
+    const updateSize = () => {
+      if (svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setViewportSize({ width: rect.width, height: rect.height });
+        }
+      }
+    };
+
+    updateSize();
     window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('resize', updateSize);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('resize', updateSize);
+    };
   }, []);
 
   return (
@@ -371,37 +391,62 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
           <span className="text-slate-500 font-mono text-[9px]">{objects.length} об.</span>
         </div>
         <div className="relative flex-1 rounded-lg bg-[#446d2c] border border-slate-800 overflow-hidden">
-          <svg className="h-full w-full" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
-            <rect width="1000" height="600" fill="#446d2c" />
-            <path
-              d="M 0 300 Q 500 100 1000 400"
-              fill="none"
-              stroke="#385b24"
-              strokeWidth="80"
-              opacity="0.4"
-            />
-            {objects.map((obj) => (
-              <circle
-                key={obj.id}
-                cx={(obj.x + 500) % 1000}
-                cy={(obj.y + 300) % 600}
-                r="7"
-                fill={obj.category === 'electrical' ? '#38bdf8' : '#facc15'}
-                stroke="#0f172a"
-                strokeWidth="2"
-              />
-            ))}
-            <rect
-              x={Math.max(0, Math.min(800, ((-pan.x / zoom + 500) % 1000) - 60))}
-              y={Math.max(0, Math.min(480, ((-pan.y / zoom + 300) % 600) - 40))}
-              width={Math.min(200, Math.max(50, 160 / zoom))}
-              height={Math.min(120, Math.max(30, 100 / zoom))}
-              fill="rgba(56, 189, 248, 0.15)"
-              stroke="#38bdf8"
-              strokeWidth="2"
-              rx="4"
-            />
-          </svg>
+          {(() => {
+            const worldMinX = objects.length > 0 ? Math.min(-1200, ...objects.map((o) => o.x - 300)) : -1200;
+            const worldMaxX = objects.length > 0 ? Math.max(1200, ...objects.map((o) => o.x + 300)) : 1200;
+            const worldMinY = objects.length > 0 ? Math.min(-700, ...objects.map((o) => o.y - 300)) : -700;
+            const worldMaxY = objects.length > 0 ? Math.max(700, ...objects.map((o) => o.y + 300)) : 700;
+            const worldW = worldMaxX - worldMinX;
+            const worldH = worldMaxY - worldMinY;
+
+            const viewX = -pan.x / zoom;
+            const viewY = -pan.y / zoom;
+            const viewW = viewportSize.width / zoom;
+            const viewH = viewportSize.height / zoom;
+
+            const rectW = Math.max(worldW * 0.08, Math.min(viewW, worldW));
+            const rectH = Math.max(worldH * 0.08, Math.min(viewH, worldH));
+            const rectX = Math.max(worldMinX, Math.min(worldMaxX - rectW, viewX));
+            const rectY = Math.max(worldMinY, Math.min(worldMaxY - rectH, viewY));
+
+            return (
+              <svg
+                className="h-full w-full"
+                viewBox={`${worldMinX} ${worldMinY} ${worldW} ${worldH}`}
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <rect x={worldMinX} y={worldMinY} width={worldW} height={worldH} fill="#446d2c" />
+                <path
+                  d={`M ${worldMinX} 0 Q 0 ${worldMinY / 2} ${worldMaxX} ${worldMaxY / 3}`}
+                  fill="none"
+                  stroke="#385b24"
+                  strokeWidth={worldW * 0.06}
+                  opacity="0.4"
+                />
+                {objects.map((obj) => (
+                  <circle
+                    key={obj.id}
+                    cx={obj.x}
+                    cy={obj.y}
+                    r={worldW * 0.014}
+                    fill={obj.category === 'electrical' ? '#38bdf8' : '#facc15'}
+                    stroke="#0f172a"
+                    strokeWidth={worldW * 0.004}
+                  />
+                ))}
+                <rect
+                  x={rectX}
+                  y={rectY}
+                  width={rectW}
+                  height={rectH}
+                  fill="rgba(56, 189, 248, 0.2)"
+                  stroke="#38bdf8"
+                  strokeWidth={worldW * 0.005}
+                  rx={worldW * 0.008}
+                />
+              </svg>
+            );
+          })()}
         </div>
       </div>
     </div>
