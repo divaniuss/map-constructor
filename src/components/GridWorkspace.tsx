@@ -22,6 +22,7 @@ export interface GridWorkspaceProps {
   placingType: MapObjectType | null;
   lineVoltage: PowerLineVoltage;
   isPowerOn: boolean;
+  centerTarget?: { x: number; y: number } | null;
 }
 
 export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
@@ -40,6 +41,7 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
   activeTool,
   lineVoltage,
   isPowerOn,
+  centerTarget,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -246,6 +248,15 @@ export const GridWorkspace: React.FC<GridWorkspaceProps> = ({
       window.removeEventListener('resize', updateSize);
     };
   }, [onConnectingPoleChange, onSelectObject, onSelectLine]);
+
+  useEffect(() => {
+    if (centerTarget && svgRef.current) {
+      const rect = svgRef.current.getBoundingClientRect();
+      const nextPanX = rect.width / 2 - centerTarget.x * zoom;
+      const nextPanY = rect.height / 2 - centerTarget.y * zoom;
+      setPan({ x: nextPanX, y: nextPanY });
+    }
+  }, [centerTarget, zoom]);
 
   return (
     <div
